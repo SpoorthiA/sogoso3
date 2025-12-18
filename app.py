@@ -895,11 +895,12 @@ def main():
                         sys.stdout = TeeOutput(old_stdout, handler)
                         
                         try:
+                            # Disable internal evaluation to unblock UI - we'll run it after yielding the answer
                             result = run_mao_with_observability(
                                 query=query,
                                 session_id=st.session_state.session_id,
                                 user_id=st.session_state.user_id,
-                                enable_evaluation=enable_evaluation
+                                enable_evaluation=False
                             )
                             handler.flush()
                         finally:
@@ -911,11 +912,12 @@ def main():
                 else:
                     # Run without showing thoughts
                     with st.spinner("Thinking..."):
+                        # Disable internal evaluation to unblock UI - we'll run it after yielding the answer
                         result = run_mao_with_observability(
                             query=query,
                             session_id=st.session_state.session_id,
                             user_id=st.session_state.user_id,
-                            enable_evaluation=enable_evaluation
+                            enable_evaluation=False
                         )
                 
                 # Store result for debug
