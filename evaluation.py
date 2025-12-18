@@ -1,8 +1,5 @@
 """Ragas evaluation integration."""
 import warnings
-import nest_asyncio
-nest_asyncio.apply()
-
 warnings.filterwarnings("ignore")  # Suppress all evaluation warnings
 
 from typing import Dict, List, Optional, Callable
@@ -49,16 +46,6 @@ def evaluate_response(
     if progress_callback:
         progress_callback("Initializing evaluation...", 0, 100)
     
-    # Guard Clause: Check for empty contexts
-    if not contexts:
-        print("⚠ No contexts available for evaluation. Returning 0.0 scores.")
-        return {
-            "Faithfulness": 0.0,
-            "Answer Relevancy": 0.0,
-            "Context Utilization": 0.0,
-            "Professionalism": 0.0
-        }
-
     # Prepare data for Ragas (using standard column names for v0.2+)
     data = {
         "question": [query],
@@ -90,13 +77,6 @@ def evaluate_response(
         )
         metrics_to_run.append(("Professionalism", professionalism))
     
-    # Filter metrics that require ground truth
-    if not ground_truth:
-        # Remove metrics that require ground truth (e.g., Context Recall, Context Precision)
-        # Note: Faithfulness, Answer Relevancy, and Context Utilization do NOT require ground truth.
-        # If we were using Context Recall, we would filter it here.
-        metrics_to_run = [m for m in metrics_to_run if m[0] not in ["Context Recall", "Context Precision", "Answer Correctness"]]
-
     # Run evaluation with optimized settings
     try:
         if progress_callback:
@@ -164,29 +144,23 @@ def extract_contexts_from_results(intermediate_results: Dict) -> List[str]:
     
     # Extract from product agent
     if "product_agent" in intermediate_results:
-        agent_result = intermediate_results["product_agent"]
-        if agent_result and isinstance(agent_result, dict):
-            products = agent_result.get("data", [])
-            for p in products:
-                contexts.append(p.get("description", ""))
+        products = intermediate_results["product_agent"].get("data", [])
+        for p in products:
+            contexts.append(p.get("description", ""))
     
     # Extract from knowledge agent
     if "knowledge_agent" in intermediate_results:
-        agent_result = intermediate_results["knowledge_agent"]
-        if agent_result and isinstance(agent_result, dict):
-            policies = agent_result.get("data", [])
-            for pol in policies:
-                contexts.append(pol.get("content", ""))
+        policies = intermediate_results["knowledge_agent"].get("data", [])
+        for pol in policies:
+            contexts.append(pol.get("content", ""))
     
     # Extract from promotion agent
     if "promotion_agent" in intermediate_results:
-        agent_result = intermediate_results["promotion_agent"]
-        if agent_result and isinstance(agent_result, dict):
-            promos = agent_result.get("data", [])
-            for promo in promos:
-                contexts.append(promo.get("content", ""))
+        promos = intermediate_results["promotion_agent"].get("data", [])
+        for promo in promos:
+            contexts.append(promo.get("content", ""))
     
     # Filter out empty contexts
-    contexts = [c for c in contexts if c and c.strip()]
+    contexts = [c for c in contexts if c.strip()]
     
     return contexts
