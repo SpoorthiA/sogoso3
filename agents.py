@@ -718,25 +718,19 @@ def synthesizer_agent(state: GraphState) -> Dict[str, Any]:
         context_parts = []
         
         if "product_agent" in intermediate_results:
-            agent_result = intermediate_results["product_agent"]
-            if agent_result and isinstance(agent_result, dict):
-                products = agent_result.get("data", [])
-                if products:
-                    context_parts.extend(_format_products_context(products))
+            products = intermediate_results["product_agent"].get("data", [])
+            if products:
+                context_parts.extend(_format_products_context(products))
         
         if "knowledge_agent" in intermediate_results:
-            agent_result = intermediate_results["knowledge_agent"]
-            if agent_result and isinstance(agent_result, dict):
-                policies = agent_result.get("data", [])
-                if policies:
-                    context_parts.extend(_format_policies_context(policies))
+            policies = intermediate_results["knowledge_agent"].get("data", [])
+            if policies:
+                context_parts.extend(_format_policies_context(policies))
         
         if "promotion_agent" in intermediate_results:
-            agent_result = intermediate_results["promotion_agent"]
-            if agent_result and isinstance(agent_result, dict):
-                promos = agent_result.get("data", [])
-                if promos:
-                    context_parts.extend(_format_promotions_context(promos))
+            promos = intermediate_results["promotion_agent"].get("data", [])
+            if promos:
+                context_parts.extend(_format_promotions_context(promos))
         
         context = "\n".join(context_parts) if context_parts else "No information found."
         
@@ -838,4 +832,3 @@ def evaluation_node(state: GraphState) -> Dict[str, Any]:
                     level="ERROR"
                 )
             return {"evaluation_scores": {}}
-
